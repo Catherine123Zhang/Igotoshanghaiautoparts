@@ -773,40 +773,9 @@
             link.click();
         }
         
-        // 渲染客户列表
-        function renderCustomerList() {
-            const container = document.getElementById('customerList');
-            container.innerHTML = '';
-            
-            customers.forEach(customer => {
-                const card = document.createElement('div');
-                card.className = `customer-card tier-${customer.tier.toLowerCase()}${customer.priority ? ' priority' : ''}`;
-                
-                card.innerHTML = `
-                    <div class="customer-booth">
-                        展位 ${customer.booth}
-                        ${customer.priority ? '<span class="priority-badge">优先</span>' : ''}
-                    </div>
-                    <div class="customer-name">${customer.company}</div>
-                    <div class="customer-meta">
-                        ${customer.tier}客户 | ${customer.type === '直接' ? '直接客户' : '其他'}
-                    </div>
-                `;
-                
-                card.addEventListener('click', () => {
-                    const annotation = annotations.get(customer.booth);
-                    if (annotation) {
-                        canvas.setActiveObject(annotation);
-                        canvas.renderAll();
-                    }
-                });
-                
-                container.appendChild(card);
-            });
-        }
         
-        // 初始化
-        renderCustomerList();
+        
+                // 初始化
         renderCustomerList();
     </script>
 </body>
