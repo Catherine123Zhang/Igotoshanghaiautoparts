@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>展会客户展位标注图 - 索引</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 32px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+            text-align: center;
+        }
+        
+        .halls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .hall-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .hall-card:hover {
+            border-color: #0AA0EB;
+            box-shadow: 0 4px 12px rgba(10, 160, 235, 0.2);
+            transform: translateY(-4px);
+        }
+        
+        .hall-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #0AA0EB;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .hall-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .stat {
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0AA0EB;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .booth-list {
+            margin-top: 15px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .booth-list strong {
+            color: #333;
+        }
+        
+        .priority-badge {
+            display: inline-block;
+            background: #ff6b6b;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            margin-left: 5px;
+        }
+        
+        .summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .summary-item {
+            text-align: center;
+        }
+        
+        .summary-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #0AA0EB;
+        }
+        
+        .summary-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 展会客户展位标注图</h1>
+        <p class="subtitle">点击展厅卡片查看该展厅的客户标注图</p>
+        
+        <div class="summary">
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-value">13</div>
+                    <div class="summary-label">展厅总数</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value">140</div>
+                    <div class="summary-label">总客户数</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value">91</div>
+                    <div class="summary-label">大客户</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value">48</div>
+                    <div class="summary-label">中客户</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="halls-grid" id="hallsGrid"></div>
+    </div>
+
+    <script>
+        // 展厅数据
+        const hallsData = {
+            "1.1": { total: 9, priority: 1, large: 5, medium: 4, small: 0, booths: ["B30", "C124", "C44", "D33", "F119", "F19", "H71", "K112", "M91"] },
+            "1.2": { total: 2, priority: 0, large: 2, medium: 0, small: 0, booths: ["K100", "N64"] },
+            "2.2": { total: 12, priority: 2, large: 7, medium: 5, small: 0, booths: ["A103", "B15", "B87", "B93", "D109", "H29", "K106", "M72", "M76", "M95", "N68", "Q07"] },
+            "3.0": { total: 9, priority: 0, large: 5, medium: 4, small: 0, booths: ["A108", "B71", "B79", "B99", "C52", "E112", "E92", "K104", "M109"] },
+            "4.1": { total: 3, priority: 1, large: 2, medium: 1, small: 0, booths: ["B79", "E26", "M67"] },
+            "5.1": { total: 2, priority: 0, large: 1, medium: 1, small: 0, booths: ["K100", "M56"] },
+            "5.2": { total: 13, priority: 0, large: 6, medium: 7, small: 0, booths: ["A110", "A115", "B07", "B105", "B109", "D109", "D112", "D115", "D19", "F102", "N108", "N19", "N88"] },
+            "6.1": { total: 7, priority: 0, large: 6, medium: 2, small: 0, booths: ["C92", "H47", "K20", "M119", "M120", "M73"] },
+            "6.2": { total: 10, priority: 1, large: 9, medium: 1, small: 0, booths: ["A107", "A17", "C01", "C115", "D103", "D120", "F107", "H32", "N99", "Q120"] },
+            "7.1": { total: 18, priority: 4, large: 11, medium: 7, small: 0, booths: ["A61", "A86", "F05", "F51", "F64", "H111", "H112", "H25", "H38", "H95", "K17", "K26", "K51", "M120", "M27", "M56", "N28"] },
+            "7.2": { total: 43, priority: 2, large: 29, medium: 13, small: 1, booths: ["A01", "A04", "A06", "A105", "A107", "A16", "A19", "A20", "A22", "A29", "A30", "A38", "B09", "B33", "B47", "B67", "D14", "D22", "D28", "D42", "E107", "E17", "E59", "F09", "F14", "F38", "F47", "F91", "K13", "K15", "K17", "K24", "K33", "K41", "K55", "M21", "M26", "M44", "M48", "M57", "N119", "N51", "N93"] },
+            "8.1": { total: 7, priority: 0, large: 4, medium: 3, small: 0, booths: ["B09", "D103", "D55", "D75", "H67", "M112", "N92"] },
+            "8.2": { total: 1, priority: 0, large: 1, medium: 0, small: 0, booths: ["B07"] }
+        };
+        
+        function renderHalls() {
+            const grid = document.getElementById('hallsGrid');
+            grid.innerHTML = '';
+            
+            Object.entries(hallsData).sort((a, b) => {
+                const [hallA] = a[0].split('.');
+                const [hallB] = b[0].split('.');
+                if (hallA !== hallB) return hallA - hallB;
+                return parseFloat(a[0]) - parseFloat(b[0]);
+            }).forEach(([hall, data]) => {
+                const card = document.createElement('a');
+                card.href = `hall_${hall.replace('.', '_')}_map.html`;
+                card.className = 'hall-card';
+                
+                const fileName = hall.replace('.', '_');
+                card.innerHTML = `
+                    <div class="hall-title">
+                        展厅 ${hall}
+                        ${data.priority > 0 ? `<span class="priority-badge">${data.priority}个优先</span>` : ''}
+                    </div>
+                    <div class="hall-stats">
+                        <div class="stat">
+                            <div class="stat-value">${data.total}</div>
+                            <div class="stat-label">总客户</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${data.large}</div>
+                            <div class="stat-label">大客户</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${data.medium}</div>
+                            <div class="stat-label">中客户</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${data.small}</div>
+                            <div class="stat-label">小客户</div>
+                        </div>
+                    </div>
+                    <div class="booth-list">
+                        <strong>展位号：</strong>${data.booths.slice(0, 8).join(', ')}${data.booths.length > 8 ? '...' : ''}
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+        
+        renderHalls();
+    </script>
+</body>
+</html>
+
