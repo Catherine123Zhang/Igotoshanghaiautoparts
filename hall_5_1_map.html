@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>展厅 5.1 - 客户展位标注图</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #0AA0EB;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #098BCC;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .canvas-container {
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            background: #fafafa;
+            position: relative;
+            overflow: auto;
+        }
+        
+        #canvas {
+            display: block;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        
+        .legend-text {
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .customer-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .customer-card {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .customer-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .customer-card.priority {
+            border: 2px solid #ff6b6b;
+            background: #fff5f5;
+        }
+        
+        .customer-card.tier-large {
+            border-left: 4px solid #FF4444;
+        }
+        
+        .customer-card.tier-medium {
+            border-left: 4px solid #FF8800;
+        }
+        
+        .customer-card.tier-small {
+            border-left: 4px solid #FFCC00;
+        }
+        
+        .customer-booth {
+            font-weight: bold;
+            color: #0AA0EB;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .customer-name {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .customer-meta {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .priority-badge {
+            display: inline-block;
+            background: #ff6b6b;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            margin-left: 5px;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 4px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0AA0EB;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>展厅 5.1 - 客户展位标注图</h1>
+        <p class="subtitle">上传平面图后，点击"自动标注"按钮或手动拖拽标注位置</p>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value">2</div>
+                <div class="stat-label">总客户数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">0</div>
+                <div class="stat-label">优先客户</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">1</div>
+                <div class="stat-label">大客户</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">1</div>
+                <div class="stat-label">中客户</div>
+            </div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FF4444;"></div>
+                <span class="legend-text">大客户</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FF8800;"></div>
+                <span class="legend-text">中客户</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FFCC00;"></div>
+                <span class="legend-text">小客户</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FF4444; border: 3px solid #ff6b6b;"></div>
+                <span class="legend-text">优先客户（星号标记）</span>
+            </div>
+        </div>
+        
+        <div class="toolbar">
+            <input type="file" id="imageInput" accept="image/*" style="display: none;">
+            <button class="btn btn-primary" onclick="document.getElementById('imageInput').click()">上传平面图</button>
+            <button class="btn btn-success" onclick="autoAnnotate()">自动标注</button>
+            <button class="btn btn-secondary" onclick="clearAnnotations()">清除标注</button>
+            <button class="btn btn-primary" onclick="exportImage()">导出图片</button>
+            <span style="margin-left: 20px; color: #666; font-size: 14px;">提示：上传平面图后，可以拖拽标注调整位置</span>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+        </div>
+        
+        <h2 style="margin-top: 30px; margin-bottom: 15px; font-size: 18px;">客户列表</h2>
+        <div class="customer-list" id="customerList"></div>
+    </div>
+
+    <script>
+        // 客户数据
+        const customers = [
+        {
+                "booth": "M56",
+                "company": "浙江华耕电子科技有限公司",
+                "tier": "中",
+                "type": "直接",
+                "priority": false,
+                "hall": "5.1"
+        },
+        {
+                "booth": "K100",
+                "company": "宁波璟译机械制造有限公司",
+                "tier": "大",
+                "type": "其他",
+                "priority": false,
+                "hall": "5.1"
+        }
+];
+        
+        // 初始化Canvas
+        const canvas = new fabric.Canvas('canvas', {
+            width: 1200,
+            height: 800,
+            backgroundColor: '#fafafa'
+        });
+        
+        let backgroundImage = null;
+        const annotations = new Map();
+        
+        // 颜色映射
+        const tierColors = {
+            '大': '#FF4444',
+            '中': '#FF8800',
+            '小': '#FFCC00'
+        };
+        
+        // 上传图片
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        // 计算缩放比例以适应画布
+                        const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+                        const width = img.width * scale;
+                        const height = img.height * scale;
+                        
+                        fabric.Image.fromURL(event.target.result, function(img) {
+                            img.scale(scale);
+                            img.set({
+                                left: (canvas.width - width) / 2,
+                                top: (canvas.height - height) / 2,
+                                selectable: false,
+                                evented: false
+                            });
+                            
+                            if (backgroundImage) {
+                                canvas.remove(backgroundImage);
+                            }
+                            backgroundImage = img;
+                            canvas.add(img);
+                            canvas.sendToBack(img);
+                            canvas.renderAll();
+                        });
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // 创建标注
+        function createAnnotation(customer) {
+            const color = tierColors[customer.tier] || '#666';
+            const isPriority = customer.priority;
+            
+            // 创建标注组
+            const group = new fabric.Group([], {
+                left: 100,
+                top: 100,
+                hasControls: true,
+                hasBorders: true,
+                lockRotation: true
+            });
+            
+            // 创建圆形标记
+            const circle = new fabric.Circle({
+                radius: 15,
+                fill: color,
+                stroke: isPriority ? '#ff6b6b' : '#fff',
+                strokeWidth: isPriority ? 3 : 2,
+                originX: 'center',
+                originY: 'center'
+            });
+            
+            // 创建星号（优先客户）
+            let star = null;
+            if (isPriority) {
+                star = new fabric.Text('★', {
+                    fontSize: 16,
+                    fill: 'white',
+                    fontWeight: 'bold',
+                    originX: 'center',
+                    originY: 'center',
+                    textAlign: 'center'
+                });
+            }
+            
+            // 创建展位号文本
+            const boothText = new fabric.Text(customer.booth, {
+                fontSize: 12,
+                fill: 'white',
+                fontWeight: 'bold',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                top: isPriority ? -25 : -20
+            });
+            
+            // 创建公司名称文本
+            const nameText = new fabric.Text(customer.company, {
+                fontSize: 11,
+                fill: '#333',
+                originX: 'center',
+                originY: 'top',
+                textAlign: 'center',
+                top: isPriority ? 25 : 20,
+                width: 150
+            });
+            
+            // 添加到组
+            group.addWithUpdate(circle);
+            if (star) {
+                group.addWithUpdate(star);
+            }
+            group.addWithUpdate(boothText);
+            group.addWithUpdate(nameText);
+            
+            // 存储客户信息
+            group.customerData = customer;
+            
+            return group;
+        }
+        
+        // 自动标注（简单布局）
+        function autoAnnotate() {
+            if (!backgroundImage) {
+                alert('请先上传平面图！');
+                return;
+            }
+            
+            clearAnnotations();
+            
+            // 简单的网格布局
+            const cols = Math.ceil(Math.sqrt(customers.length));
+            const rows = Math.ceil(customers.length / cols);
+            const spacingX = canvas.width / (cols + 1);
+            const spacingY = canvas.height / (rows + 1);
+            
+            customers.forEach((customer, index) => {
+                const col = index % cols;
+                const row = Math.floor(index / cols);
+                
+                const annotation = createAnnotation(customer);
+                annotation.set({
+                    left: spacingX * (col + 1),
+                    top: spacingY * (row + 1)
+                });
+                
+                canvas.add(annotation);
+                annotations.set(customer.booth, annotation);
+            });
+            
+            canvas.renderAll();
+        }
+        
+        // 清除标注
+        function clearAnnotations() {
+            annotations.forEach(annotation => {
+                canvas.remove(annotation);
+            });
+            annotations.clear();
+            canvas.renderAll();
+        }
+        
+        // 导出图片
+        function exportImage() {
+            const dataURL = canvas.toDataURL({
+                format: 'png',
+                quality: 1.0,
+                multiplier: 2
+            });
+            
+            const link = document.createElement('a');
+            link.download = `展厅5.1-客户标注图.png`;
+            link.href = dataURL;
+            link.click();
+        }
+        
+        // 渲染客户列表
+        function renderCustomerList() {
+            const container = document.getElementById('customerList');
+            container.innerHTML = '';
+            
+            customers.forEach(customer => {
+                const card = document.createElement('div');
+                card.className = `customer-card tier-${customer.tier.toLowerCase()}${customer.priority ? ' priority' : ''}`;
+                
+                card.innerHTML = `
+                    <div class="customer-booth">
+                        展位 ${customer.booth}
+                        ${customer.priority ? '<span class="priority-badge">优先</span>' : ''}
+                    </div>
+                    <div class="customer-name">${customer.company}</div>
+                    <div class="customer-meta">
+                        ${customer.tier}客户 | ${customer.type === '直接' ? '直接客户' : '其他'}
+                    </div>
+                `;
+                
+                card.addEventListener('click', () => {
+                    const annotation = annotations.get(customer.booth);
+                    if (annotation) {
+                        canvas.setActiveObject(annotation);
+                        canvas.renderAll();
+                    }
+                });
+                
+                container.appendChild(card);
+            });
+        }
+        
+        // 初始化
+        renderCustomerList();
+    </script>
+</body>
+</html>
