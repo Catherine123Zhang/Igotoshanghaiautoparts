@@ -437,6 +437,23 @@
             // 存储客户信息
             group.customerData = customer;
             
+            // 添加点击事件，跳转到详情页
+            group.on('mousedown', function() {
+                const detailUrl = `customer-detail.html?company=${encodeURIComponent(customer.company)}`;
+                window.location.href = detailUrl;
+            });
+            
+            // 添加鼠标悬停效果
+            group.on('mouseover', function() {
+                canvas.defaultCursor = 'pointer';
+                canvas.renderAll();
+            });
+            
+            group.on('mouseout', function() {
+                canvas.defaultCursor = 'default';
+                canvas.renderAll();
+            });
+            
             return group;
         }
         

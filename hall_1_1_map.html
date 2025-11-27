@@ -485,6 +485,23 @@
             // 存储客户信息
             group.customerData = customer;
             
+            // 添加点击事件，跳转到详情页
+            group.on('mousedown', function() {
+                const detailUrl = `customer-detail.html?company=${encodeURIComponent(customer.company)}`;
+                window.location.href = detailUrl;
+            });
+            
+            // 添加鼠标悬停效果
+            group.on('mouseover', function() {
+                canvas.defaultCursor = 'pointer';
+                canvas.renderAll();
+            });
+            
+            group.on('mouseout', function() {
+                canvas.defaultCursor = 'default';
+                canvas.renderAll();
+            });
+            
             return group;
         }
         
@@ -552,23 +569,32 @@
                 const card = document.createElement('div');
                 card.className = `customer-card tier-${customer.tier.toLowerCase()}${customer.priority ? ' priority' : ''}`;
                 
+                // 创建详情页链接
+                const detailUrl = `customer-detail.html?company=${encodeURIComponent(customer.company)}`;
+                
                 card.innerHTML = `
                     <div class="customer-booth">
                         展位 ${customer.booth}
                         ${customer.priority ? '<span class="priority-badge">优先</span>' : ''}
                     </div>
-                    <div class="customer-name">${customer.company}</div>
+                    <div class="customer-name">
+                        <a href="${detailUrl}" style="color: inherit; text-decoration: none; cursor: pointer;">
+                            ${customer.company}
+                        </a>
+                    </div>
                     <div class="customer-meta">
                         ${customer.tier}客户 | ${customer.type === '直接' ? '直接客户' : '其他'}
                     </div>
                 `;
                 
-                card.addEventListener('click', () => {
-                    const annotation = annotations.get(customer.booth);
-                    if (annotation) {
-                        canvas.setActiveObject(annotation);
-                        canvas.renderAll();
+                // 点击卡片跳转到详情页
+                card.addEventListener('click', (e) => {
+                    // 如果点击的是链接，不阻止默认行为
+                    if (e.target.tagName === 'A') {
+                        return;
                     }
+                    // 否则跳转到详情页
+                    window.location.href = detailUrl;
                 });
                 
                 container.appendChild(card);

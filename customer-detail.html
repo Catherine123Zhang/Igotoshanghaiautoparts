@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客户详情</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .back-btn {
+            padding: 10px 20px;
+            background: #0AA0EB;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+        
+        .back-btn:hover {
+            background: #098BCC;
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 28px;
+            flex: 1;
+            margin-left: 20px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .badge-large {
+            background: #FF4444;
+            color: white;
+        }
+        
+        .badge-medium {
+            background: #FF8800;
+            color: white;
+        }
+        
+        .badge-small {
+            background: #FFCC00;
+            color: #333;
+        }
+        
+        .badge-direct {
+            background: #28a745;
+            color: white;
+        }
+        
+        .badge-priority {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #0AA0EB;
+        }
+        
+        .info-card h3 {
+            color: #0AA0EB;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .info-card p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 5px 0;
+        }
+        
+        .info-card strong {
+            color: #333;
+        }
+        
+        .detail-section {
+            margin-bottom: 30px;
+        }
+        
+        .detail-section h2 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .detail-item {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        .detail-item strong {
+            color: #0AA0EB;
+            display: inline-block;
+            min-width: 120px;
+        }
+        
+        .product-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .product-tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .reason-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+        
+        .reason-box strong {
+            color: #856404;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="javascript:history.back()" class="back-btn">← 返回</a>
+            <h1 id="companyName">客户详情</h1>
+        </div>
+        
+        <div id="content">
+            <div class="loading">加载中...</div>
+        </div>
+    </div>
+
+    <script>
+        // 从URL参数获取公司名称
+        const urlParams = new URLSearchParams(window.location.search);
+        const companyName = decodeURIComponent(urlParams.get('company') || '');
+        
+        // 加载客户数据
+        async function loadCustomerDetail() {
+            try {
+                // 加载客户数据文件
+                const response = await fetch('customers-data.json');
+                const allCustomers = await response.json();
+                
+                // 查找匹配的客户
+                const customer = allCustomers.find(c => c.company === companyName);
+                
+                if (!customer) {
+                    document.getElementById('content').innerHTML = `
+                        <div class="error">
+                            <h2>未找到客户信息</h2>
+                            <p>找不到公司名称为 "${companyName}" 的客户信息。</p>
+                            <a href="index.html" class="back-btn" style="margin-top: 20px;">返回首页</a>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // 渲染客户详情
+                renderCustomerDetail(customer);
+            } catch (error) {
+                console.error('加载客户数据失败:', error);
+                document.getElementById('content').innerHTML = `
+                    <div class="error">
+                        <h2>加载失败</h2>
+                        <p>无法加载客户数据，请稍后重试。</p>
+                        <a href="index.html" class="back-btn" style="margin-top: 20px;">返回首页</a>
+                    </div>
+                `;
+            }
+        }
+        
+        function renderCustomerDetail(customer) {
+            // 设置标题
+            document.getElementById('companyName').innerHTML = `
+                ${customer.company}
+                <span class="badge badge-${customer.tier.toLowerCase()}">${customer.tier}客户</span>
+                ${customer.type === '直接' ? '<span class="badge badge-direct">直接客户</span>' : ''}
+                ${customer.priority ? '<span class="badge badge-priority">优先客户</span>' : ''}
+            `;
+            
+            // 渲染内容
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3>📍 展位信息</h3>
+                        <p><strong>展厅：</strong>${customer.hall}</p>
+                        <p><strong>展位号：</strong>${customer.booth}</p>
+                        <p><strong>城市：</strong>${customer.city || '未知'}</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3>🏢 公司信息</h3>
+                        <p><strong>业务类型：</strong>${customer.businessType || '未知'}</p>
+                        <p><strong>客户类型：</strong>${customer.customerType || customer.type === '直接' ? '直接客户（制造商，自己生产需要电镀的产品）' : '其他'}</p>
+                        <p><strong>社保人数：</strong>${customer.socialSecurityCount || '数据未找到'}</p>
+                    </div>
+                    
+                    ${customer.address ? `
+                    <div class="info-card">
+                        <h3>📍 地址信息</h3>
+                        <p>${customer.address}</p>
+                    </div>
+                    ` : ''}
+                    
+                    ${customer.website ? `
+                    <div class="info-card">
+                        <h3>🌐 官网链接</h3>
+                        <p><a href="${customer.website}" target="_blank" style="color: #0AA0EB;">${customer.website}</a></p>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <div class="detail-section">
+                    <h2>📦 产品信息</h2>
+                    <div class="detail-item">
+                        <p><strong>产品数量：</strong>${customer.productCount || 0} 个</p>
+                        ${customer.productCategories ? `
+                        <p><strong>产品类别：</strong></p>
+                        <div class="product-list">
+                            ${customer.productCategories.split('|').map(cat => cat.trim()).filter(cat => cat).map(cat => 
+                                `<span class="product-tag">${cat}</span>`
+                            ).join('')}
+                        </div>
+                        ` : ''}
+                        ${customer.productNames ? `
+                        <p style="margin-top: 10px;"><strong>产品名称：</strong></p>
+                        <p style="color: #666;">${customer.productNames}</p>
+                        ` : ''}
+                    </div>
+                </div>
+                
+                ${customer.reasonForPlating ? `
+                <div class="detail-section">
+                    <h2>💡 需要滚镀锌镍合金的理由</h2>
+                    <div class="reason-box">
+                        <strong>理由：</strong>
+                        <p>${customer.reasonForPlating}</p>
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${customer.classificationReason ? `
+                <div class="detail-section">
+                    <h2>📊 分层理由</h2>
+                    <div class="detail-item">
+                        <p>${customer.classificationReason}</p>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+        }
+        
+        // 页面加载时执行
+        if (companyName) {
+            loadCustomerDetail();
+        } else {
+            document.getElementById('content').innerHTML = `
+                <div class="error">
+                    <h2>参数错误</h2>
+                    <p>缺少公司名称参数。</p>
+                    <a href="index.html" class="back-btn" style="margin-top: 20px;">返回首页</a>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
+
